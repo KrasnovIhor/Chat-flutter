@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
 
+  static const String id = Routes.chat;
+
   @override
   State<ChatScreen> createState() => _ChatScreenState();
 }
