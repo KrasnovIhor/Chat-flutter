@@ -29,6 +29,13 @@
             {
               "client_id": "669941151038-go5anjrdudsi1rft7nqpmlc2f5iju8ij.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "669941151038-hmqfi91l9dcq61cfp5q82v4pushq29t7.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.ikrasnov.chatFlutter"
+              }
             }
           ]
         }
