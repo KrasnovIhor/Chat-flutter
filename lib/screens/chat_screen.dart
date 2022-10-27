@@ -1,6 +1,9 @@
+import 'package:chat_flutter/components/messages_stream.dart';
 import 'package:chat_flutter/constants.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
@@ -12,8 +15,11 @@ class ChatScreen extends StatefulWidget {
 }
 
 class _ChatScreenState extends State<ChatScreen> {
+  final _db = FirebaseFirestore.instance;
   final _auth = FirebaseAuth.instance;
+  final textFieldController = TextEditingController();
   late User loggedInUser;
+  late String messageText = '';
 
   @override
   void initState() {
@@ -28,8 +34,35 @@ class _ChatScreenState extends State<ChatScreen> {
 
       if (user != null) {
         loggedInUser = user;
-        print('logged in user: ${loggedInUser.email}');
       }
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  void signOut() async {
+    try {
+      await _auth.signOut();
+      if (mounted) {
+        GoRouter.of(context).pop();
+      }
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  void sendMessage() async {
+    textFieldController.clear();
+    try {
+      if (messageText == '') return;
+
+      Map<String, dynamic> message = {
+        'sender': loggedInUser.email,
+        'text': messageText,
+        'createdAt': DateTime.now(),
+      };
+
+      await _db.collection('messages').add(message);
     } catch (e) {
       print(e);
     }
@@ -42,10 +75,9 @@ class _ChatScreenState extends State<ChatScreen> {
         leading: null,
         actions: <Widget>[
           IconButton(
-              icon: const Icon(Icons.close),
-              onPressed: () {
-                //Implement logout functionality
-              }),
+            icon: const Icon(Icons.close),
+            onPressed: signOut,
+          ),
         ],
         title: const Text('⚡️Chat'),
         backgroundColor: Colors.lightBlueAccent,
@@ -55,6 +87,9 @@ class _ChatScreenState extends State<ChatScreen> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
+            MessagesStream(
+              currentUser: loggedInUser,
+            ),
             Container(
               decoration: kMessageContainerDecoration,
               child: Row(
@@ -62,16 +97,15 @@ class _ChatScreenState extends State<ChatScreen> {
                 children: <Widget>[
                   Expanded(
                     child: TextField(
+                      controller: textFieldController,
                       onChanged: (value) {
-                        //Do something with the user input.
+                        messageText = value.trim();
                       },
                       decoration: kMessageTextFieldDecoration,
                     ),
                   ),
                   TextButton(
-                    onPressed: () {
-                      //Implement send functionality.
-                    },
+                    onPressed: sendMessage,
                     child: const Text(
                       'Send',
                       style: kSendButtonTextStyle,
